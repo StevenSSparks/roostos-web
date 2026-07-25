@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoostOS — a whole website on a tiny box</title>
+<meta name="description" content="RoostOS turns a $20 ESP32 into a captive-portal appliance — its own Wi-Fi, DNS, real HTTPS and an SSH shell. Build it on your laptop, flash it in one command.">
+<meta property="og:title" content="RoostOS — a whole website on a tiny box">
+<meta property="og:description" content="A captive-portal appliance in a box: Wi-Fi, DNS, real HTTPS, SSH — built on your laptop, flashed to a $20 board.">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230d1117'/%3E%3Cpath d='M11 20a6 6 0 0 1 11-3l3-1-2 3 1 3-3-1a6 6 0 0 1-10-1z' fill='%23ffbe4d'/%3E%3Ccircle cx='20' cy='15' r='1.4' fill='%230d1117'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#0a0e15; --panel:#151d2c; --panel2:#1b2436; --edge:#243049;
+    --ink:#eef2fb; --dim:#93a0c4; --teal:#34e2c0; --indigo:#7c8cff; --amber:#ffbe4d;
+    --grad:linear-gradient(90deg,var(--teal),var(--indigo));
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{ font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(900px 500px at 78% -8%, rgba(52,226,192,.10), transparent 60%),
+      radial-gradient(800px 500px at 10% 4%, rgba(124,140,255,.10), transparent 55%),
+      var(--bg);
+    line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  a{ color:var(--teal); text-decoration:none; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 22px; }
+  .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+
+  /* nav */
+  nav{ position:sticky; top:0; z-index:20; backdrop-filter:blur(10px);
+    background:rgba(13,17,23,.72); border-bottom:1px solid var(--edge); }
+  nav .row{ display:flex; align-items:center; gap:18px; height:62px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:-.3px; }
+  .brand .os{ color:var(--teal); }
+  nav .spacer{ flex:1; }
+  nav a.link{ color:var(--dim); font-weight:600; font-size:14.5px; }
+  nav a.link:hover{ color:var(--ink); }
+  .btn{ display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:14.5px; border-radius:10px;
+    padding:9px 15px; border:1px solid var(--edge); color:var(--ink); background:var(--panel); transition:.15s; cursor:pointer; }
+  .btn:hover{ border-color:var(--teal); transform:translateY(-1px); }
+  .btn.pri{ background:var(--grad); color:#04140f; border:none; }
+  .btn.pri:hover{ filter:brightness(1.06); }
+
+  /* hero */
+  .hero{ display:grid; grid-template-columns:1.05fr .95fr; gap:24px; align-items:center; padding:64px 0 40px; }
+  .kicker{ display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--teal); background:rgba(52,226,192,.10); border:1px solid rgba(52,226,192,.25);
+    padding:6px 12px; border-radius:999px; margin-bottom:18px; }
+  h1{ font-size:clamp(34px,5.4vw,58px); line-height:1.03; letter-spacing:-1px; font-weight:850; }
+  h1 .g{ background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .lead{ color:var(--dim); font-size:clamp(16px,2.1vw,19px); margin:18px 0 26px; max-width:34ch; }
+  .cta{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .install{ display:flex; align-items:center; gap:10px; background:var(--bg2); border:1px solid var(--edge);
+    border-radius:12px; padding:11px 14px; font-size:14.5px; }
+  .install .dolr{ color:var(--teal); } .install code{ color:var(--ink); }
+  .install .cp{ margin-left:4px; color:var(--dim); cursor:pointer; } .install .cp:hover{ color:var(--teal); }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:22px; }
+  .chip{ font-size:12.5px; font-weight:600; color:var(--dim); background:var(--panel); border:1px solid var(--edge); padding:5px 11px; border-radius:999px; }
+  .heroart{ display:grid; place-items:center; }
+  .heroart svg{ width:100%; max-width:440px; height:auto; filter:drop-shadow(0 30px 60px rgba(0,0,0,.5)); }
+
+  /* sections */
+  section{ padding:46px 0; }
+  .eyebrow{ text-align:center; font-size:12.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); }
+  h2{ text-align:center; font-size:clamp(24px,3.4vw,34px); letter-spacing:-.5px; margin:8px 0 6px; font-weight:820; }
+  .sub{ text-align:center; color:var(--dim); max-width:56ch; margin:0 auto 30px; }
+
+  .flow{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .step{ background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--edge); border-radius:16px; padding:22px; }
+  .step .ic{ width:46px; height:46px; border-radius:12px; display:grid; place-items:center; background:rgba(52,226,192,.10); border:1px solid rgba(52,226,192,.22); margin-bottom:12px; }
+  .step h3{ font-size:16.5px; margin-bottom:5px; } .step h3 b{ color:var(--teal); } .step p{ color:var(--dim); font-size:14px; }
+  .step code{ font-size:12.5px; color:var(--amber); }
+
+  .feat{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media(max-width:760px){ .feat{ grid-template-columns:1fr 1fr; } }
+  .card{ background:var(--panel); border:1px solid var(--edge); border-radius:16px; padding:20px; transition:.15s; }
+  .card:hover{ border-color:var(--teal); transform:translateY(-2px); }
+  .card .ic{ width:42px; height:42px; margin-bottom:12px; color:var(--teal); }
+  .card h3{ font-size:16px; margin-bottom:5px; } .card p{ color:var(--dim); font-size:13.7px; }
+
+  .show{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:center; }
+  .show .cap{ color:var(--dim); font-size:14px; margin-top:10px; }
+  .frame{ border:1px solid var(--edge); border-radius:16px; overflow:hidden; background:var(--panel); }
+  .frame img{ display:block; width:100%; height:auto; }
+  .kitshot{ border-radius:18px; overflow:hidden; border:1px solid var(--edge); box-shadow:0 24px 50px rgba(0,0,0,.45); }
+  .kitshot img{ display:block; width:100%; height:auto; }
+
+  .quick{ background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--edge); border-radius:18px; padding:26px; }
+  pre{ background:var(--bg2); border:1px solid var(--edge); border-radius:12px; padding:16px 18px; overflow-x:auto; font-size:13.5px; }
+  pre .c{ color:var(--dim); } pre .k{ color:var(--teal); } pre .a{ color:var(--amber); }
+
+  footer{ border-top:1px solid var(--edge); margin-top:30px; padding:30px 0; color:var(--dim); font-size:13.5px; }
+  footer .row{ display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+  footer a{ color:var(--dim); } footer a:hover{ color:var(--ink); }
+
+  @media(max-width:860px){
+    .hero{ grid-template-columns:1fr; text-align:center; padding-top:44px; }
+    .lead{ max-width:none; } .cta,.chips{ justify-content:center; }
+    .heroart{ order:-1; } .heroart svg{ max-width:320px; }
+    .flow,.show{ grid-template-columns:1fr; }
+    nav a.link{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap"><div class="row">
+  <div class="brand">
+    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#151d2c"/><path d="M10 21a6.5 6.5 0 0 1 12-3.3l3.2-1.1-2.1 3.1 1.1 3.2-3.2-1.1A6.5 6.5 0 0 1 10 21z" fill="#ffbe4d"/><circle cx="20.4" cy="15.6" r="1.5" fill="#0d1117"/></svg>
+    Roost<span class="os">OS</span>
+  </div>
+  <div class="spacer"></div>
+  <a class="link" href="#how">How it works</a>
+  <a class="link" href="#features">Features</a>
+  <a class="link" href="https://github.com/StevenSSparks/roost/blob/main/docs/MAKE-YOUR-OWN.md">Docs</a>
+  <a class="btn" href="https://github.com/StevenSSparks/roost">GitHub ↗</a>
+</div></div></nav>
+
+<header class="wrap"><div class="hero">
+  <div>
+    <span class="kicker">📡 open source · esp32 · MIT</span>
+    <h1>A whole website<br>on a <span class="g">tiny box.</span></h1>
+    <p class="lead">RoostOS turns a $20 ESP32 into a captive-portal appliance — its own Wi-Fi, its own DNS, a real HTTPS padlock, and an SSH shell. Build and test it on your laptop, then flash it in one command.</p>
+    <div class="cta">
+      <div class="install mono"><span class="dolr">$</span> <code>brew install stevenssparks/tap/roost</code> <span class="cp" onclick="navigator.clipboard&&navigator.clipboard.writeText('brew install stevenssparks/tap/roost')" title="copy">⧉</span></div>
+      <a class="btn pri" href="#how">See how it works ↓</a>
+    </div>
+    <div class="chips">
+      <span class="chip">📶 Captive portal</span><span class="chip">🌐 Own DNS</span>
+      <span class="chip">🔒 Real HTTPS</span><span class="chip">🖥️ SSH shell</span><span class="chip">📊 Live console</span>
+    </div>
+  </div>
+
+  <div class="heroart">
+    <svg viewBox="0 0 480 470" role="img" aria-label="A little bird roosting on the antenna of a tiny web-server device broadcasting Wi-Fi">
+      <defs>
+        <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#222c42"/><stop offset="1" stop-color="#141c2c"/></linearGradient>
+        <linearGradient id="scr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#0e1730"/></linearGradient>
+        <linearGradient id="bird" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd479"/><stop offset="1" stop-color="#ff9f43"/></linearGradient>
+      </defs>
+      <!-- ground shadow -->
+      <ellipse cx="240" cy="432" rx="120" ry="20" fill="#000" opacity=".35"/>
+      <!-- wifi rings, radiating up-right from the bird -->
+      <g fill="none" stroke="#34e2c0" stroke-linecap="round" stroke-width="7" opacity=".9">
+        <path d="M300 92a70 70 0 0 1 62 8" opacity=".85"/>
+        <path d="M292 116a104 104 0 0 1 96 12" opacity=".55"/>
+        <path d="M286 140a138 138 0 0 1 128 16" opacity=".3"/>
+      </g>
+      <!-- antenna -->
+      <path d="M322 250 L318 120" stroke="#2b3550" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="318" cy="118" r="8" fill="#2b3550"/>
+      <!-- device body -->
+      <rect x="128" y="248" width="196" height="150" rx="24" fill="url(#body)" stroke="#2f3b58" stroke-width="2"/>
+      <rect x="128" y="248" width="196" height="26" rx="24" fill="#ffffff" opacity=".05"/>
+      <!-- screen -->
+      <rect x="156" y="280" width="140" height="86" rx="12" fill="url(#scr)" stroke="#243049"/>
+      <!-- padlock on screen (HTTPS) -->
+      <g transform="translate(210,300)">
+        <rect x="0" y="16" width="52" height="38" rx="8" fill="#34e2c0"/>
+        <path d="M9 16v-8a17 17 0 0 1 34 0v8" fill="none" stroke="#34e2c0" stroke-width="6"/>
+        <circle cx="26" cy="33" r="5" fill="#0b1220"/><rect x="24" y="33" width="4" height="11" rx="2" fill="#0b1220"/>
+      </g>
+      <!-- roost label -->
+      <text x="226" y="384" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#66739a" letter-spacing="2">roost32</text>
+      <!-- usb-c cable -->
+      <rect x="222" y="398" width="36" height="12" rx="4" fill="#2b3550"/>
+      <path d="M240 410 q4 40 -34 52 q-40 12 -70 -2" fill="none" stroke="#2b3550" stroke-width="8" stroke-linecap="round"/>
+      <!-- the bird, roosting on the antenna top -->
+      <g transform="translate(300,74)">
+        <!-- tail -->
+        <path d="M-24 10 l-22 -2 l18 10 z" fill="#ff9f43"/>
+        <!-- body -->
+        <ellipse cx="4" cy="10" rx="28" ry="21" fill="url(#bird)"/>
+        <!-- wing -->
+        <path d="M-6 4 q18 -6 30 8 q-14 10 -30 -2 z" fill="#ffab52" opacity=".9"/>
+        <!-- head -->
+        <circle cx="26" cy="-6" r="15" fill="url(#bird)"/>
+        <!-- crest -->
+        <path d="M24 -20 q4 -8 12 -7 q-5 5 -6 11 z" fill="#ff9f43"/>
+        <!-- beak -->
+        <path d="M40 -6 l16 3 l-15 6 z" fill="#ff7a2f"/>
+        <!-- eye -->
+        <circle cx="30" cy="-8" r="3.1" fill="#0d1117"/><circle cx="31.2" cy="-9" r="1" fill="#fff"/>
+        <!-- legs gripping the antenna -->
+        <path d="M-2 30 l0 12 M12 30 l0 12" stroke="#c8781f" stroke-width="3.4" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+</div></header>
+
+<section id="how" class="wrap">
+  <div class="eyebrow">The whole loop</div>
+  <h2>Emulate → Build → Flash</h2>
+  <p class="sub">One tool, <code class="mono">roost</code>, does everything — from your laptop to the board. No hand-entered flash offsets, no separate firmware step.</p>
+  <div class="flow">
+    <div class="step">
+      <div class="ic"><svg width="24" height="24" fill="none" stroke="#34e2c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M1 20h22"/></svg></div>
+      <h3><b>1.</b> Emulate</h3>
+      <p>Run the whole appliance on your Mac/Windows/Linux and test in a browser. <code>roost run</code></p>
+    </div>
+    <div class="step">
+      <div class="ic"><svg width="24" height="24" fill="none" stroke="#34e2c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg></div>
+      <h3><b>2.</b> Build</h3>
+      <p>Compile the firmware + pack your site into one flashable image. <code>roost build-image</code></p>
+    </div>
+    <div class="step">
+      <div class="ic"><svg width="24" height="24" fill="none" stroke="#34e2c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/></svg></div>
+      <h3><b>3.</b> Flash</h3>
+      <p>Write it to a $20 ESP32 over USB — it auto-detects the port. <code>roost flash-board</code></p>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="wrap">
+  <div class="eyebrow">What the box does</div>
+  <h2>A tiny appliance, fully loaded</h2>
+  <p class="sub">Everything a little private network needs — served offline from a thumb-sized board, or emulated on your laptop.</p>
+  <div class="feat">
+    <div class="card"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0"/><path d="M5 12a10 10 0 0 1 14 0"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></svg>
+      <h3>Captive portal</h3><p>Join the Wi-Fi and a page pops up — your site, your rules, no internet behind it.</p></div>
+    <div class="card"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
+      <h3>Its own DNS</h3><p>Every name resolves to the box, so your domain works with zero upstream.</p></div>
+    <div class="card"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      <h3>Real HTTPS</h3><p>Serves a genuine Let's Encrypt padlock — trusted, and it works fully offline.</p></div>
+    <div class="card"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M6 9l3 3-3 3M12 15h5"/></svg>
+      <h3>SSH mini-shell</h3><p>Log in for a cozy little unix-ish prompt: <span class="mono">top</span>, <span class="mono">tail</span>, <span class="mono">ls</span>, <span class="mono">dns</span>.</p></div>
+    <div class="card"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M6 14l3-4 2 2 3-5 2 3"/></svg>
+      <h3>Live console</h3><p>A dashboard streams every web hit and DNS lookup as it happens.</p></div>
+    <div class="card"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg>
+      <h3>One binary</h3><p>Emulator, builder, and flasher in a single Go tool. It's just a folder → a device.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="show">
+    <div>
+      <div class="eyebrow" style="text-align:left">Real hardware</div>
+      <h2 style="text-align:left">$20. Thumb-sized. Yours.</h2>
+      <p style="color:var(--dim)">RoostOS runs on a Seeed XIAO ESP32-S3 — small enough to hide in your pocket, powerful enough to serve a whole site with a real padlock over its own Wi-Fi. Plug it into USB power and it just works.</p>
+      <p class="cap">Above: RoostOS running on the XIAO ESP32-S3.</p>
+    </div>
+    <div class="kitshot"><img src="img/kit.jpg" alt="RoostOS running on a XIAO ESP32-S3 board with antenna, powered over USB-C" loading="lazy"></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="show">
+    <div class="frame"><img src="img/console.png" alt="The RoostOS live console showing web hits and DNS lookups in real time" loading="lazy"></div>
+    <div>
+      <div class="eyebrow" style="text-align:left">Watch it live</div>
+      <h2 style="text-align:left">See every packet come home to roost</h2>
+      <p style="color:var(--dim)">The built-in console streams every request and DNS query in real time — captive-portal probes, page loads, the works. It's the easiest way to <em>see</em> how the box funnels a whole network to itself.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="quick">
+    <div class="eyebrow" style="text-align:left">Quickstart</div>
+    <h2 style="text-align:left;margin-bottom:16px">From zero to a padlock on a board</h2>
+    <pre class="mono"><span class="c"># install</span>
+brew <span class="k">install</span> stevenssparks/tap/roost
+
+<span class="c"># try it on your laptop — browse http://localhost:8080, ssh in, watch :9090</span>
+roost run
+
+<span class="c"># make your own: copy the demo, edit data/, test again</span>
+cp -R examples/friendlyportal my-portal
+roost run my-portal
+
+<span class="c"># put it on a $20 board (installs the toolchain if needed)</span>
+roost doctor --install
+roost build-image my-portal
+roost flash-board my-portal --image my-portal/build/<span class="a">*.bin</span> --confirm</pre>
+    <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn pri" href="https://github.com/StevenSSparks/roost/blob/main/docs/MAKE-YOUR-OWN.md">Full guide →</a>
+      <a class="btn" href="https://github.com/StevenSSparks/roost">Star on GitHub ★</a>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap"><div class="row">
+  <div class="brand" style="font-size:16px"><span>🐦</span> Roost<span class="os">OS</span></div>
+  <span>A captive-portal appliance in a box.</span>
+  <div class="spacer" style="flex:1"></div>
+  <a href="https://github.com/StevenSSparks/roost">GitHub</a>
+  <a href="https://github.com/StevenSSparks/roost/blob/main/docs/MAKE-YOUR-OWN.md">Docs</a>
+  <a href="https://github.com/StevenSSparks/roost/releases">Releases</a>
+  <span>· MIT © 2026 Steve Sparks</span>
+</div></div></footer>
+
+</body>
+</html>
