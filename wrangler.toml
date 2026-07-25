@@ -1,5 +1,9 @@
 name = "roostos-web"
 compatibility_date = "2026-01-01"
+routes = [
+  { pattern = "roostos.dev", custom_domain = true },
+  { pattern = "www.roostos.dev", custom_domain = true },
+]
 
 [assets]
 directory = "./public"
