@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 #
-# Fix the roostos.dev apex custom domain on the roostos-web Worker.
-# Cloudflare registered the custom domain but couldn't create the apex DNS
-# record (usually a stray/conflicting root record). This finds it, removes it
-# (with your OK), and attaches the apex to the Worker.
+# Re-provision the roostos.dev apex custom domain on the roostos-web Worker.
+# If Cloudflare registered the custom domain but never created its DNS record
+# (a common apex glitch), deleting + re-attaching it forces a clean provision.
 #
-# Needs CLOUDFLARE_API_TOKEN in your env with: Zone:Read+Edit, Workers Routes:Edit.
-#   ./fix-apex.sh          # diagnose + prompt before changing anything
-#   ./fix-apex.sh --yes    # do it without prompting
+# Auth: uses $CLOUDFLARE_API_TOKEN if set, else falls back to wrangler's stored
+# OAuth login (~/Library/Preferences/.wrangler/config/default.toml) — which has
+# workers_routes:write, enough to manage custom domains.
+#
+#   ./fix-apex.sh
 #
 set -euo pipefail
 
@@ -15,60 +16,42 @@ DOMAIN="roostos.dev"
 SERVICE="roostos-web"
 ACCT="d8f2b80b4b6f160190e4e62faded6950"
 API="https://api.cloudflare.com/client/v4"
-YES="${1:-}"
+TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 
-: "${CLOUDFLARE_API_TOKEN:?Set CLOUDFLARE_API_TOKEN first (your interactive shell should have it)}"
-AUTH="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+TOKEN="${CLOUDFLARE_API_TOKEN:-}"
+if [ -z "$TOKEN" ]; then
+  WC="$HOME/Library/Preferences/.wrangler/config/default.toml"
+  [ -f "$WC" ] && TOKEN=$(grep '^oauth_token' "$WC" | sed -E 's/.*"([^"]+)".*/\1/')
+fi
+[ -n "$TOKEN" ] || { echo "No token. Run 'wrangler login' or export CLOUDFLARE_API_TOKEN."; exit 1; }
+AUTH="Authorization: Bearer $TOKEN"
 cf(){ curl -s -H "$AUTH" -H "Content-Type: application/json" "$@"; }
+ok(){ python3 -c 'import json,sys;print("ok" if json.load(open(sys.argv[1])).get("success") else "FAILED: "+json.dumps(json.load(open(sys.argv[1])).get("errors")))' "$1"; }
 
-echo "==> verifying token"
-cf "$API/user/tokens/verify" | python3 -c '
-import sys,json; d=json.load(sys.stdin)
-print("   token:", "valid" if d.get("success") else "INVALID -> "+json.dumps(d.get("errors")))
-sys.exit(0 if d.get("success") else 1)'
+echo "==> zone id for $DOMAIN"
+cf "$API/zones?name=$DOMAIN" -o "$TMP/z.json"
+ZID=$(python3 -c 'import json,sys;r=json.load(open(sys.argv[1])).get("result") or [];print(r[0]["id"] if r else "")' "$TMP/z.json")
+[ -n "$ZID" ] || { echo "   couldn't read zone (token lacks zone:read). Use the dashboard."; exit 1; }
+echo "   $ZID"
 
-echo "==> looking up zone for $DOMAIN"
-ZRESP=$(cf "$API/zones?name=$DOMAIN")
-ZID=$(printf '%s' "$ZRESP" | python3 -c 'import sys,json; r=(json.load(sys.stdin).get("result") or []); print(r[0]["id"] if r else "")')
-if [ -z "$ZID" ]; then
-  echo "   couldn't read the zone. Raw response:"
-  printf '%s' "$ZRESP" | python3 -m json.tool | sed 's/^/     /'
-  echo "   -> your token lacks Zone:Read. Fix it in the dashboard, or make a token with Zone:Read+Edit + Workers Routes:Edit."
-  exit 1
-fi
-echo "   zone: $ZID"
-
-echo "==> apex records at $DOMAIN"
-RECS=$(cf "$API/zones/$ZID/dns_records?name=$DOMAIN")
-printf '%s' "$RECS" | python3 -c '
-import sys,json
-r=json.load(sys.stdin).get("result") or []
-print("\n".join(f"     {x[\"type\"]:6} {x[\"name\"]} -> {x.get(\"content\")}  (proxied={x.get(\"proxied\")}, id={x[\"id\"]})" for x in r) or "     (none)")'
-
-# conflicting root records = A/AAAA/CNAME at the apex (a Worker custom domain owns the apex itself)
-CONFLICTS=$(printf '%s' "$RECS" | python3 -c 'import sys,json;[print(x["id"]) for x in (json.load(sys.stdin).get("result") or []) if x["type"] in ("A","AAAA","CNAME")]')
-
-if [ -n "$CONFLICTS" ]; then
-  echo "==> these root records conflict with the custom domain and must be removed:"
-  echo "$CONFLICTS" | sed 's/^/     id /'
-  if [ "$YES" != "--yes" ]; then
-    printf "   delete them and attach %s to the Worker? [y/N] " "$DOMAIN"; read -r ans
-    [ "$ans" = "y" ] || [ "$ans" = "Y" ] || { echo "   aborted."; exit 0; }
-  fi
-  for id in $CONFLICTS; do
-    cf -X DELETE "$API/zones/$ZID/dns_records/$id" >/dev/null && echo "   deleted $id"
-  done
+echo "==> current apex custom-domain binding"
+cf "$API/accounts/$ACCT/workers/domains" -o "$TMP/wd.json"
+DID=$(python3 -c 'import json,sys;print(next((x["id"] for x in (json.load(open(sys.argv[1])).get("result") or []) if x.get("hostname")=="'"$DOMAIN"'"),""))' "$TMP/wd.json")
+if [ -n "$DID" ]; then
+  echo "   deleting $DID"
+  cf -X DELETE "$API/accounts/$ACCT/workers/domains/$DID" -o "$TMP/del.json" || true
 fi
 
-echo "==> attaching $DOMAIN as a custom domain on Worker '$SERVICE'"
+echo "==> re-attaching $DOMAIN -> $SERVICE (forces fresh DNS provisioning)"
 cf -X PUT "$API/accounts/$ACCT/workers/domains" \
-   -d "{\"zone_id\":\"$ZID\",\"hostname\":\"$DOMAIN\",\"service\":\"$SERVICE\",\"environment\":\"production\"}" \
- | python3 -c '
-import sys,json; d=json.load(sys.stdin)
-print("   ", "attached ✅" if d.get("success") else "FAILED -> "+json.dumps(d.get("errors")))'
+   -d "{\"zone_id\":\"$ZID\",\"hostname\":\"$DOMAIN\",\"service\":\"$SERVICE\",\"environment\":\"production\"}" -o "$TMP/put.json"
+echo -n "   attach: "; ok "$TMP/put.json"
 
-echo
-echo "==> give it ~1 min, then verify:"
-echo "     dig +short $DOMAIN @1.1.1.1"
-echo "     curl -sI https://$DOMAIN | head -1"
-echo "   (in Edge, clear its DNS cache: edge://net-internals/#dns -> Clear host cache)"
+echo "==> waiting for DNS + edge cert (Cloudflare issues the cert; can take a few min)"
+for i in $(seq 1 18); do
+  sleep 10
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 "https://$DOMAIN" 2>/dev/null || echo 000)
+  echo "   [$((i*10))s] https://$DOMAIN -> $code"
+  [ "$code" = "200" ] && { echo "==> live! (clear Edge DNS cache: edge://net-internals/#dns)"; exit 0; }
+done
+echo "==> DNS is set; edge cert still provisioning — re-check https://$DOMAIN in a few minutes."
