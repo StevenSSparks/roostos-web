@@ -61,6 +61,13 @@
   .sub{ text-align:center; color:var(--dim); max-width:60ch; margin:0 auto 30px; }
   .feat{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
   @media(max-width:760px){ .feat{ grid-template-columns:1fr 1fr; } }
+  .shots{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media(max-width:760px){ .shots{ grid-template-columns:1fr 1fr; } }
+  .shot{ margin:0; border:1px solid var(--edge); border-radius:14px; overflow:hidden; background:var(--panel); }
+  .shot img{ display:block; width:100%; height:auto; }
+  .shot figcaption{ padding:8px 12px; color:var(--dim); font-size:13px; }
+  .shot.ph{ aspect-ratio:4/3; display:grid; place-items:center; color:var(--dim); font-weight:600;
+    border-style:dashed; background:linear-gradient(180deg,var(--panel),var(--bg2)); text-align:center; padding:10px; }
   .card{ background:var(--panel); border:1px solid var(--edge); border-radius:16px; padding:20px; transition:.15s; }
   .card:hover{ border-color:var(--teal); transform:translateY(-2px); }
   .card .ic{ font-size:22px; margin-bottom:10px; }
@@ -97,6 +104,7 @@
   </div>
   <div class="spacer"></div>
   <a class="link" href="#what">What it does</a>
+  <a class="link" href="#gallery">Photos</a>
   <a class="link" href="#setup">Get set up</a>
   <a class="link" href="/tdeck/config/">Config builder</a>
   <a class="btn" href="https://github.com/StevenSSparks/roost-tdeck">GitHub ↗</a>
@@ -141,9 +149,23 @@
     <div class="card"><div class="ic">💬</div><h3>On-screen chat</h3><p>Type on the QWERTY, press Enter, read the reply on the color LCD. Scrollback, adjustable fonts, your-message-stays-on-top.</p></div>
     <div class="card"><div class="ic">🔀</div><h3>Four AI providers</h3><p>Anthropic, OpenAI, Gemini, or a local Ollama box. Pick the active one in Settings — it verifies the key answers before switching.</p></div>
     <div class="card"><div class="ic">🗺️</div><h3>Maps + GPS</h3><p>Geoapify maps render right on the screen. Ask the AI "show me a map of Paris" and it does — it can drive the map itself. GPS + NTP make it location- and time-aware.</p></div>
-    <div class="card"><div class="ic">⌨️</div><h3>Chat from a terminal</h3><p>Drive the whole thing over USB-C or a network shell: chat with the AI and configure everything with a <code>/set</code> wizard. Flash with just WiFi, paste your keys over the shell — no rebuild.</p></div>
+    <div class="card"><div class="ic">🔐</div><h3>SSH &amp; terminal</h3><p>Chat with the AI and configure everything over <b>USB-C</b>, a <b>network shell</b>, or real <b>SSH</b> (<code>ssh roost@device</code>). A <code>/set</code> wizard, <code>/web</code> DuckDuckGo search, <code>/gps</code>, <code>/map</code> and more. Flash with just WiFi, paste keys over the shell — no rebuild.</p></div>
     <div class="card"><div class="ic">🐍</div><h3>Touch + games</h3><p>Calibratable touchscreen — tap the menu, tap Settings, tap to play. Snake, touch Sudoku (10 boards), and a Slide 1-11 puzzle.</p></div>
-    <div class="card"><div class="ic">⚙️</div><h3>All configurable</h3><p>BlackBerry-style Settings: your name, timezone, brightness, sounds, provider, fonts, colors — persisted across reboots.</p></div>
+    <div class="card"><div class="ic">⚙️</div><h3>All configurable</h3><p>BlackBerry-style Settings + status-bar modes (IP / Demo / Phone with WiFi bars &amp; battery). Name, timezone, brightness, colors, provider — persisted across reboots.</p></div>
+  </div>
+</section>
+
+<section id="gallery" class="wrap">
+  <div class="eyebrow">In the wild</div>
+  <h2>On the device</h2>
+  <p class="sub">Real photos of the RoostOS Communicator running on a LILYGO T-Deck Plus.</p>
+  <div class="shots">
+    <figure class="shot ph" data-cap="Boot splash">Boot splash 🐤</figure>
+    <figure class="shot ph" data-cap="On-screen chat">On-screen chat 💬</figure>
+    <figure class="shot ph" data-cap="Maps on-screen">Maps 🗺️</figure>
+    <figure class="shot ph" data-cap="Settings">Settings ⚙️</figure>
+    <figure class="shot ph" data-cap="SSH / terminal">SSH / terminal 🔐</figure>
+    <figure class="shot ph" data-cap="Games">Games 🐍</figure>
   </div>
 </section>
 
