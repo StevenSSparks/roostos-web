@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoostOS Communicator — a handheld Claude AI device</title>
+<meta name="description" content="Turn a LILYGO T-Deck Plus into a pocket AI communicator. Chat with Claude, GPT, Gemini or a local Ollama model over WiFi on a real QWERTY handheld. Clone, set your keys, flash.">
+<meta property="og:title" content="RoostOS Communicator — a handheld Claude AI device">
+<meta property="og:description" content="A pocket AI communicator on a LILYGO T-Deck Plus: chat with Claude/GPT/Gemini/Ollama over WiFi. Clone, set keys, flash.">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230d1117'/%3E%3Cpath d='M11 20a6 6 0 0 1 11-3l3-1-2 3 1 3-3-1a6 6 0 0 1-10-1z' fill='%23ffbe4d'/%3E%3Ccircle cx='20' cy='15' r='1.4' fill='%230d1117'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#0a0e15; --panel:#151d2c; --panel2:#1b2436; --edge:#243049;
+    --ink:#eef2fb; --dim:#93a0c4; --teal:#34e2c0; --indigo:#7c8cff; --amber:#ffbe4d;
+    --grad:linear-gradient(90deg,var(--teal),var(--indigo));
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{ font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(900px 500px at 78% -8%, rgba(52,226,192,.10), transparent 60%),
+      radial-gradient(800px 500px at 10% 4%, rgba(124,140,255,.10), transparent 55%),
+      var(--bg);
+    line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  a{ color:var(--teal); text-decoration:none; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 22px; }
+  .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  nav{ position:sticky; top:0; z-index:20; backdrop-filter:blur(10px);
+    background:rgba(13,17,23,.72); border-bottom:1px solid var(--edge); }
+  nav .row{ display:flex; align-items:center; gap:18px; height:62px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:-.3px; }
+  .brand .os{ color:var(--teal); }
+  nav .spacer{ flex:1; }
+  nav a.link{ color:var(--dim); font-weight:600; font-size:14.5px; } nav a.link:hover{ color:var(--ink); }
+  .btn{ display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:14.5px; border-radius:10px;
+    padding:9px 15px; border:1px solid var(--edge); color:var(--ink); background:var(--panel); transition:.15s; cursor:pointer; }
+  .btn:hover{ border-color:var(--teal); transform:translateY(-1px); }
+  .btn.pri{ background:var(--grad); color:#04140f; border:none; } .btn.pri:hover{ filter:brightness(1.06); }
+  .hero{ display:grid; grid-template-columns:1.05fr .95fr; gap:24px; align-items:center; padding:64px 0 40px; }
+  .kicker{ display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--teal); background:rgba(52,226,192,.10); border:1px solid rgba(52,226,192,.25);
+    padding:6px 12px; border-radius:999px; margin-bottom:18px; }
+  h1{ font-size:clamp(34px,5.4vw,56px); line-height:1.04; letter-spacing:-1px; font-weight:850; }
+  h1 .g{ background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .lead{ color:var(--dim); font-size:clamp(16px,2.1vw,19px); margin:18px 0 26px; max-width:40ch; }
+  .cta{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:22px; }
+  .chip{ font-size:12.5px; font-weight:600; color:var(--dim); background:var(--panel); border:1px solid var(--edge); padding:5px 11px; border-radius:999px; }
+  .heroart{ display:grid; place-items:center; }
+  .device{ width:100%; max-width:360px; aspect-ratio:1.25/1; border-radius:22px; border:1px solid var(--edge);
+    background:linear-gradient(180deg,#10182a,#0a0f1a); box-shadow:0 30px 60px rgba(0,0,0,.5); padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .screen{ flex:1; border-radius:10px; background:#0b120f; border:1px solid #22403a; padding:10px; overflow:hidden; font-family:ui-monospace,Menlo,monospace; font-size:12px; }
+  .screen .hb{ display:flex; justify-content:space-between; color:#2fd6b0; border-bottom:1px solid #22403a; padding-bottom:5px; margin-bottom:7px; }
+  .screen .u{ color:#ffcc4d; } .screen .a{ color:#cfe; } .screen .row2{ margin:4px 0; }
+  .kbd{ display:grid; grid-template-columns:repeat(10,1fr); gap:3px; }
+  .kbd i{ height:12px; border-radius:2px; background:#1b2436; border:1px solid #243049; }
+  section{ padding:46px 0; }
+  .eyebrow{ text-align:center; font-size:12.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); }
+  h2{ text-align:center; font-size:clamp(24px,3.4vw,34px); letter-spacing:-.5px; margin:8px 0 6px; font-weight:820; }
+  .sub{ text-align:center; color:var(--dim); max-width:60ch; margin:0 auto 30px; }
+  .feat{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media(max-width:760px){ .feat{ grid-template-columns:1fr 1fr; } }
+  .card{ background:var(--panel); border:1px solid var(--edge); border-radius:16px; padding:20px; transition:.15s; }
+  .card:hover{ border-color:var(--teal); transform:translateY(-2px); }
+  .card .ic{ font-size:22px; margin-bottom:10px; }
+  .card h3{ font-size:16px; margin-bottom:5px; } .card p{ color:var(--dim); font-size:13.7px; }
+  .flow{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  @media(max-width:760px){ .flow{ grid-template-columns:1fr 1fr; } }
+  .step{ background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--edge); border-radius:16px; padding:20px; }
+  .step .n{ color:var(--teal); font-weight:800; font-size:13px; letter-spacing:.1em; }
+  .step h3{ font-size:15.5px; margin:6px 0 4px; } .step p{ color:var(--dim); font-size:13.5px; }
+  .step code{ font-size:12px; color:var(--amber); }
+  .quick{ background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--edge); border-radius:18px; padding:26px; }
+  pre{ background:var(--bg2); border:1px solid var(--edge); border-radius:12px; padding:16px 18px; overflow-x:auto; font-size:13.5px; }
+  pre .c{ color:var(--dim); } pre .k{ color:var(--teal); } pre .a{ color:var(--amber); }
+  .providers{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .prov{ display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--edge); border-radius:999px; padding:8px 15px; font-weight:600; font-size:14px; }
+  .prov b{ color:var(--teal); }
+  .banner{ text-align:center; background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--edge); border-radius:18px; padding:34px 26px; }
+  footer{ border-top:1px solid var(--edge); margin-top:30px; padding:30px 0; color:var(--dim); font-size:13.5px; }
+  footer .row{ display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+  footer a{ color:var(--dim); } footer a:hover{ color:var(--ink); }
+  @media(max-width:860px){
+    .hero{ grid-template-columns:1fr; text-align:center; padding-top:44px; }
+    .lead{ max-width:none; } .cta,.chips{ justify-content:center; } .heroart{ order:-1; }
+    nav a.link{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap"><div class="row">
+  <div class="brand">
+    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#151d2c"/><path d="M10 21a6.5 6.5 0 0 1 12-3.3l3.2-1.1-2.1 3.1 1.1 3.2-3.2-1.1A6.5 6.5 0 0 1 10 21z" fill="#ffbe4d"/><circle cx="20.4" cy="15.6" r="1.5" fill="#0d1117"/></svg>
+    Roost<span class="os">OS</span>
+  </div>
+  <div class="spacer"></div>
+  <a class="link" href="#what">What it does</a>
+  <a class="link" href="#setup">Get set up</a>
+  <a class="link" href="/tdeck/config/">Config builder</a>
+  <a class="btn" href="https://github.com/StevenSSparks/roost-tdeck">GitHub ↗</a>
+</div></div></nav>
+
+<header class="wrap"><div class="hero">
+  <div>
+    <span class="kicker">🐤📡 RoostOS Communicator</span>
+    <h1>A handheld <span class="g">Claude AI</span> communicator.</h1>
+    <p class="lead">Turn a LILYGO T-Deck Plus into a pocket AI device — chat with Claude, GPT, Gemini, or a local Ollama model over WiFi, on a real QWERTY handheld with a color screen. Clone it, set your keys, flash it.</p>
+    <div class="cta">
+      <a class="btn pri" href="#setup">Get started</a>
+      <a class="btn" href="/tdeck/config/">⚙ Config builder</a>
+      <a class="btn" href="https://github.com/StevenSSparks/roost-tdeck">GitHub ↗</a>
+    </div>
+    <div class="chips">
+      <span class="chip">ESP32-S3</span><span class="chip">2.8" color LCD</span>
+      <span class="chip">QWERTY</span><span class="chip">GPS · LoRa</span><span class="chip">PlatformIO</span>
+    </div>
+  </div>
+  <div class="heroart">
+    <div class="device" aria-hidden="true">
+      <div class="screen">
+        <div class="hb"><span>RoostOS Communicator</span><span>▊ 52.170</span></div>
+        <div class="row2 u">You: what's the weather like on Mars?</div>
+        <div class="row2 a">Haiku: Cold and thin — around -60&deg;C on</div>
+        <div class="row2 a">average, with a CO2 atmosphere ~1% of</div>
+        <div class="row2 a">Earth's. Bring a very warm coat.</div>
+        <div class="row2" style="color:#ffcc4d">&gt; _</div>
+      </div>
+      <div class="kbd"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+  </div>
+</div></header>
+
+<main>
+<section id="what" class="wrap">
+  <div class="eyebrow">What it does</div>
+  <h2>A real AI conversation, in your pocket</h2>
+  <p class="sub">Everything runs on the device over your own WiFi. No phone, no companion app.</p>
+  <div class="feat">
+    <div class="card"><div class="ic">💬</div><h3>On-screen chat</h3><p>Type on the QWERTY, press Enter, read the reply on the color LCD. Scrollback, adjustable fonts, your-message-stays-on-top.</p></div>
+    <div class="card"><div class="ic">🔀</div><h3>Four AI providers</h3><p>Anthropic, OpenAI, Gemini, or a local Ollama box. Pick the active one in Settings — it verifies the key answers before switching.</p></div>
+    <div class="card"><div class="ic">⚙️</div><h3>BlackBerry-style Settings</h3><p>A tidy menu of sub-pages — Display, Colors, AI Provider, System — all persisted across reboots.</p></div>
+    <div class="card"><div class="ic">🐤</div><h3>Branded boot splash</h3><p>The RoostOS chick-on-an-antenna on every boot.</p></div>
+    <div class="card"><div class="ic">🎨</div><h3>Yours to theme</h3><p>Message + input fonts and colors are configurable and saved.</p></div>
+    <div class="card"><div class="ic">🛠️</div><h3>Hackable</h3><p>PlatformIO, open source. GPS, maps, LoRa, games and an on-device tool loop are on the roadmap.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="eyebrow">Bring your own model</div>
+  <h2>Pick a provider</h2>
+  <p class="sub">Configure one or several. Only providers with a key (or a reachable Ollama host) can be activated on the device — one active at a time.</p>
+  <div class="providers">
+    <span class="prov">🟣 <b>Anthropic</b> · Claude Haiku</span>
+    <span class="prov">🟢 <b>OpenAI</b> · GPT-4o mini</span>
+    <span class="prov">🔵 <b>Gemini</b> · Flash</span>
+    <span class="prov">🟠 <b>Ollama</b> · local, no key</span>
+  </div>
+</section>
+
+<section id="setup" class="wrap">
+  <div class="eyebrow">Get set up</div>
+  <h2>Clone → configure → flash → fun</h2>
+  <p class="sub">You need a LILYGO T-Deck Plus, a USB-C cable, and an API key for at least one provider.</p>
+  <div class="flow">
+    <div class="step"><div class="n">STEP 1</div><h3>Get a key</h3><p>Anthropic: <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a> → API Keys. (Or OpenAI / Gemini / a local Ollama host.)</p></div>
+    <div class="step"><div class="n">STEP 2</div><h3>Build your secrets</h3><p>Use the <a href="/tdeck/config/">config builder</a> to generate <code>secrets.h</code> — or copy <code>secrets.example.h</code> and edit by hand.</p></div>
+    <div class="step"><div class="n">STEP 3</div><h3>Clone + drop it in</h3><p>Clone the repo, put your file at <code>include/secrets.h</code> (it's git-ignored).</p></div>
+    <div class="step"><div class="n">STEP 4</div><h3>Flash</h3><p><code>pio run -e app -t upload</code>. Type a message + Enter. Trackball click opens Settings.</p></div>
+  </div>
+  <div class="quick" style="margin-top:22px">
+<pre><span class="c"># 1. clone</span>
+git clone https://github.com/StevenSSparks/roost-tdeck.git
+cd roost-tdeck
+
+<span class="c"># 2. configure (or use the web builder at roostos.dev/tdeck/config)</span>
+cp include/secrets.example.h include/secrets.h
+<span class="k">$EDITOR</span> include/secrets.h        <span class="c"># fill in WiFi + at least one API key</span>
+
+<span class="c"># 3. flash it (T-Deck on USB-C)</span>
+pio run <span class="a">-e app -t upload</span>
+</pre>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="banner">
+    <h2 style="text-align:center">Build your own</h2>
+    <p class="sub">Open source, MIT-spirited, part of the RoostOS family. Fork it, add a game, wire up the GPS — PRs welcome.</p>
+    <div class="cta" style="justify-content:center">
+      <a class="btn pri" href="/tdeck/config/">⚙ Open the config builder</a>
+      <a class="btn" href="https://github.com/StevenSSparks/roost-tdeck">GitHub ↗</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap"><div class="row">
+  <div class="brand"><span>Roost<span class="os">OS</span></span></div>
+  <div class="spacer" style="flex:1"></div>
+  <a href="/">roostos.dev</a>
+  <a href="https://github.com/StevenSSparks/roost-tdeck">roost-tdeck</a>
+  <a href="/tdeck/config/">Config builder</a>
+</div></div></footer>
+
+</body>
+</html>
