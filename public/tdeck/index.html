@@ -66,6 +66,12 @@
   .shot{ margin:0; border:1px solid var(--edge); border-radius:14px; overflow:hidden; background:var(--panel); }
   .shot img{ display:block; width:100%; height:auto; }
   .shot figcaption{ padding:8px 12px; color:var(--dim); font-size:13px; }
+  /* two galleries: full handhelds (portrait) side by side, and screen-only shots (landscape) in their own grid */
+  .shots-h{ font-size:14px; color:var(--dim); font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:28px 0 12px; }
+  .shots-hh{ display:grid; grid-template-columns:repeat(auto-fill,minmax(178px,1fr)); gap:14px; }
+  .shots-sc{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+  .shots-sc .shot img{ height:200px; object-fit:cover; }
+  @media(max-width:760px){ .shots-hh{ grid-template-columns:1fr 1fr; } .shots-sc{ grid-template-columns:1fr; } }
   .shot.ph{ aspect-ratio:4/3; display:grid; place-items:center; color:var(--dim); font-weight:600;
     border-style:dashed; background:linear-gradient(180deg,var(--panel),var(--bg2)); text-align:center; padding:10px; }
   .card{ background:var(--panel); border:1px solid var(--edge); border-radius:16px; padding:20px; transition:.15s; }
@@ -160,9 +166,19 @@
   <div class="eyebrow">In the wild</div>
   <h2>On the device</h2>
   <p class="sub">Real photos of the RoostOS Communicator running on a LILYGO T-Deck Plus.</p>
-  <div class="shots">
-    <figure class="shot"><img src="img/IMG_3107.jpg" alt="On-screen AI chat with the phone-style status bar" loading="lazy"><figcaption>On-screen AI chat</figcaption></figure>
+  <div class="shots-h">The handheld, in action</div>
+  <div class="shots-hh">
     <figure class="shot"><img src="img/IMG_3088.jpg" alt="Boot splash — RoostOS Communicator, the chick on an antenna" loading="lazy"><figcaption>Boot splash</figcaption></figure>
+    <figure class="shot"><img src="img/IMG_3107.jpg" alt="On-screen AI chat with the phone-style status bar" loading="lazy"><figcaption>On-screen AI chat</figcaption></figure>
+    <figure class="shot"><img src="img/route.jpg" alt="A driving route from Waco to Tulsa drawn on the map with distance and time" loading="lazy"><figcaption>Directions on the map</figcaption></figure>
+    <figure class="shot"><img src="img/directions-text.jpg" alt="Numbered turn-by-turn driving directions in text" loading="lazy"><figcaption>Turn-by-turn text</figcaption></figure>
+    <figure class="shot"><img src="img/abilities.jpg" alt="The AI listing what it can do — maps, directions, location, chat" loading="lazy"><figcaption>Ask what it can do</figcaption></figure>
+    <figure class="shot"><img src="img/keyboard.jpg" alt="The full QWERTY keyboard — numbers and symbols printed above each key" loading="lazy"><figcaption>Full QWERTY keyboard</figcaption></figure>
+  </div>
+  <div class="shots-h">Up close on the screen</div>
+  <div class="shots-sc">
+    <figure class="shot"><img src="img/ai-providers.jpg" alt="On-device AI provider picker — anthropic, openai, gemini, ollama and the model" loading="lazy"><figcaption>Provider &amp; model picker</figcaption></figure>
+    <figure class="shot"><img src="img/chat-catbreeds.jpg" alt="An AI answer sourced from a live web search" loading="lazy"><figcaption>Web-sourced answers</figcaption></figure>
     <figure class="shot"><img src="img/IMG_3105.jpg" alt="Settings — System page, WiFi masked in Demo mode" loading="lazy"><figcaption>Settings (Demo mode)</figcaption></figure>
     <figure class="shot"><img src="img/IMG_3097.jpg" alt="Snake with the on-screen D-pad" loading="lazy"><figcaption>Snake</figcaption></figure>
     <figure class="shot"><img src="img/IMG_3104.jpg" alt="Sudoku with a tap number pad" loading="lazy"><figcaption>Touch Sudoku</figcaption></figure>
