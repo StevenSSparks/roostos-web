@@ -1,9 +1,14 @@
 name = "roostos-web"
+main = "src/worker.js"
 compatibility_date = "2026-01-01"
 routes = [
   { pattern = "roostos.dev", custom_domain = true },
   { pattern = "www.roostos.dev", custom_domain = true },
+  { pattern = "perch.roostos.dev", custom_domain = true },
+  { pattern = "coop.roostos.dev", custom_domain = true },
 ]
 
 [assets]
 directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
