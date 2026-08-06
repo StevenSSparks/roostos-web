@@ -1,24 +1,16 @@
-// Hostname router: one worker, one asset tree, three sites.
-//   roostos.dev / www        → public/            (the hub)
-//   perch.roostos.dev        → public/perch/      (Perch dashboard demo)
-//   coop.roostos.dev         → public/coop/       (Coop engine simulation)
-// Subdomain requests are rewritten into their folder so the demos' absolute
-// asset paths (/assets/…, /demo/…) keep working unchanged.
-const SUBSITES = {
-  'perch.roostos.dev': '/perch',
-  'coop.roostos.dev': '/coop',
+// Hostname router. The hub lives here; the Perch/Coop demos moved to their own
+// domain — the old subdomains 301 so shared links keep working forever.
+const MOVED = {
+  'perch.roostos.dev': 'https://perch.perchmesh.dev',
+  'coop.roostos.dev': 'https://coop.perchmesh.dev',
 }
 
 export default {
   async fetch(req, env) {
     const url = new URL(req.url)
-    const prefix = SUBSITES[url.hostname]
-    if (prefix) {
-      // Plain concatenation: "/" → "/perch/" (the directory form the assets
-      // layer serves without a canonicalizing redirect that would leak the
-      // folder into the visitor's URL bar).
-      url.pathname = prefix + url.pathname
-      return env.ASSETS.fetch(new Request(url, req))
+    const dest = MOVED[url.hostname]
+    if (dest) {
+      return Response.redirect(dest + url.pathname + url.search, 301)
     }
     return env.ASSETS.fetch(req)
   },

@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RoostOS — build a real device this weekend. No soldering.</title>
-<meta name="description" content="RoostOS is two open-source ESP32 builds: a handheld AI communicator (chat with Claude/GPT/Gemini over WiFi, on a LILYGO T-Deck) and a captive-portal web appliance. No soldering. All code. All fun — even for a beginner. Order the parts from Micro Center or GigaParts.">
-<meta name="keywords" content="RoostOS, ESP32, LILYGO T-Deck, T-Deck Plus, handheld AI, AI communicator, Claude, ChatGPT, Gemini, Ollama, ESP32 project, no soldering, beginner electronics, DIY gadget, PlatformIO, captive portal, ESP32 web server, SSH ESP32, ESP32 maps, GPS, Micro Center, GigaParts, open source hardware, MIT license, weekend project, maker">
-<meta property="og:title" content="RoostOS — build a real device this weekend">
-<meta property="og:description" content="Two open-source ESP32 builds: a handheld AI communicator and a captive-portal web appliance. No soldering, all code, all fun — even for a beginner.">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RoostOS — open-source appliances for hardware you own</title>
+<meta name="description" content="RoostOS turns small radios and dev boards into finished products: Perch, a Meshtastic command center; Coop, its capture engine; a pocket AI communicator; and a self-hosted server. Open source, no subscriptions.">
+<meta name="keywords" content="RoostOS, Perch, Coop, Meshtastic, Meshtastic dashboard, LoRa mesh, traceroute, MeshSTL, ESP32, LILYGO T-Deck, XIAO ESP32-S3, handheld AI, open source hardware, self-hosted, no soldering">
+<meta property="og:title" content="RoostOS — open-source appliances for hardware you own">
+<meta property="og:description" content="A Meshtastic command center, a pocket AI communicator, and a self-hosted server — finished open-source products for hardware on your desk.">
 <meta name="theme-color" content="#0d1117">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230d1117'/%3E%3Cpath d='M11 20a6 6 0 0 1 11-3l3-1-2 3 1 3-3-1a6 6 0 0 1-10-1z' fill='%23ffbe4d'/%3E%3Ccircle cx='20' cy='15' r='1.4' fill='%230d1117'/%3E%3C/svg%3E">
 <style>
@@ -16,311 +16,250 @@
     --ink:#eef2fb; --dim:#93a0c4; --teal:#34e2c0; --indigo:#7c8cff; --amber:#ffbe4d;
     --grad:linear-gradient(90deg,var(--teal),var(--indigo));
   }
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html{ scroll-behavior:smooth; }
-  body{ font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink);
-    background:
-      radial-gradient(900px 500px at 80% -8%, rgba(52,226,192,.10), transparent 60%),
-      radial-gradient(800px 500px at 8% 2%, rgba(124,140,255,.10), transparent 55%),
-      var(--bg);
-    line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
-  a{ color:var(--teal); text-decoration:none; }
-  .wrap{ max-width:1080px; margin:0 auto; padding:0 22px; }
-  .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
-  nav{ position:sticky; top:0; z-index:20; backdrop-filter:blur(10px); background:rgba(13,17,23,.72); border-bottom:1px solid var(--edge); }
-  nav .row{ display:flex; align-items:center; gap:18px; height:62px; }
-  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:-.3px; }
-  .brand .os{ color:var(--teal); }
-  nav .spacer{ flex:1; }
-  nav a.link{ color:var(--dim); font-weight:600; font-size:14.5px; } nav a.link:hover{ color:var(--ink); }
-  .btn{ display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:14.5px; border-radius:10px;
-    padding:9px 15px; border:1px solid var(--edge); color:var(--ink); background:var(--panel); transition:.15s; cursor:pointer; }
-  .btn:hover{ border-color:var(--teal); transform:translateY(-1px); }
-  .btn.pri{ background:var(--grad); color:#04140f; border:none; } .btn.pri:hover{ filter:brightness(1.06); }
-  .hero{ text-align:center; padding:64px 0 34px; }
-  .kicker{ display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; letter-spacing:.08em;
-    text-transform:uppercase; color:var(--teal); background:rgba(52,226,192,.10); border:1px solid rgba(52,226,192,.25);
-    padding:6px 12px; border-radius:999px; margin-bottom:20px; }
-  h1{ font-size:clamp(34px,6vw,62px); line-height:1.03; letter-spacing:-1.5px; font-weight:850; }
-  h1 .g{ background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
-  .lead{ color:var(--dim); font-size:clamp(16px,2.2vw,20px); margin:20px auto 26px; max-width:62ch; }
-  .cta{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
-  .chips{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:24px; }
-  .chip{ font-size:12.5px; font-weight:600; color:var(--dim); background:var(--panel); border:1px solid var(--edge); padding:5px 11px; border-radius:999px; }
-  section{ padding:44px 0; }
-  .eyebrow{ text-align:center; font-size:12.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); }
-  h2{ text-align:center; font-size:clamp(24px,3.6vw,36px); letter-spacing:-.5px; margin:8px 0 8px; font-weight:820; }
-  .sub{ text-align:center; color:var(--dim); max-width:64ch; margin:0 auto 30px; }
-  .story{ max-width:64ch; margin:0 auto; color:#cdd6ee; font-size:17px; }
-  .story p{ margin:0 0 16px; } .story b{ color:var(--ink); }
-  .projects{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  @media(max-width:820px){ .projects{ grid-template-columns:1fr; } }
-  .proj{ display:flex; flex-direction:column; background:linear-gradient(180deg,var(--panel),var(--panel2));
-    border:1px solid var(--edge); border-radius:18px; overflow:hidden; transition:.15s; }
-  .proj:hover{ border-color:var(--teal); transform:translateY(-2px); }
-  .proj .pic{ aspect-ratio:16/10; background:#0b1220; display:grid; place-items:center; overflow:hidden; border-bottom:1px solid var(--edge); }
-  .proj .pic img{ width:100%; height:100%; object-fit:cover; }
-  .proj .body{ padding:22px; display:flex; flex-direction:column; gap:10px; flex:1; }
-  .proj h3{ font-size:22px; letter-spacing:-.3px; } .proj h3 span{ color:var(--teal); }
-  .proj .tag{ font-size:12.5px; color:var(--amber); font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
-  .proj p{ color:var(--dim); font-size:14.5px; flex:1; }
-  .proj .row{ display:flex; gap:10px; flex-wrap:wrap; }
-  .steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-  @media(max-width:760px){ .steps{ grid-template-columns:1fr 1fr; } }
-  .step{ background:var(--panel); border:1px solid var(--edge); border-radius:16px; padding:20px; }
-  .step .n{ color:var(--teal); font-weight:800; font-size:13px; letter-spacing:.1em; }
-  .step h4{ font-size:15.5px; margin:6px 0 4px; } .step p{ color:var(--dim); font-size:13.5px; }
-  .step code{ font-size:12px; color:var(--amber); }
-  .feat{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  @media(max-width:760px){ .feat{ grid-template-columns:1fr; } }
-  .card{ background:var(--panel); border:1px solid var(--edge); border-radius:16px; padding:20px; }
-  .card .ic{ font-size:22px; margin-bottom:10px; } .card h4{ font-size:16px; margin-bottom:5px; } .card p{ color:var(--dim); font-size:13.7px; }
-  .card code{ font-size:12px; color:var(--amber); }
-  .band{ background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--edge); border-radius:18px; padding:30px; }
-  .kit{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
-  @media(max-width:640px){ .kit{ grid-template-columns:1fr; } }
-  .kit a{ display:block; background:var(--bg2); border:1px solid var(--edge); border-radius:12px; padding:14px 16px; color:var(--ink); font-weight:600; }
-  .kit a:hover{ border-color:var(--teal); } .kit a small{ display:block; color:var(--dim); font-weight:400; font-size:13px; margin-top:3px; }
-  .note{ background:rgba(255,190,77,.08); border:1px solid rgba(255,190,77,.3); border-radius:12px; padding:14px 16px; color:#e7d9b6; font-size:14px; }
-  footer{ border-top:1px solid var(--edge); margin-top:20px; padding:28px 0; color:var(--dim); font-size:13.5px; }
-  footer .row{ display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
-  footer a{ color:var(--dim); } footer a:hover{ color:var(--ink); }
-  @media(max-width:860px){ nav a.link{ display:none; } }
-  /* hero with real hardware photo */
-  .hero{ display:grid; grid-template-columns:1.05fr .95fr; gap:44px; align-items:center; text-align:left; padding:52px 0 30px; }
-  .hero-copy .cta, .hero-copy .chips{ justify-content:flex-start; }
-  .hero-shot{ position:relative; display:flex; gap:16px; align-items:center; justify-content:center; }
-  .hero-shot::before{ content:""; position:absolute; inset:-8% 0; background:radial-gradient(closest-side,rgba(52,226,192,.18),transparent 72%); filter:blur(8px); z-index:0; }
-  .hero-shot img{ position:relative; z-index:1; height:330px; width:auto; border-radius:20px; border:1px solid var(--edge);
-    box-shadow:0 30px 72px -22px rgba(0,0,0,.8); }
-  @media(max-width:820px){ .hero-shot img{ height:250px; } }
-  @media(max-width:430px){ .hero-shot img{ height:185px; } }
-  .hero-cap{ position:relative; z-index:1; grid-column:1/-1; text-align:center; color:var(--dim); font-size:12.5px; margin-top:14px; }
-  @media(max-width:820px){ .hero{ grid-template-columns:1fr; text-align:center; padding:34px 0 18px; }
-    .hero-copy .cta, .hero-copy .chips{ justify-content:center; } .hero-shot{ order:-1; margin-bottom:6px; } }
-  /* real-photo gallery */
-  .gal{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-  @media(max-width:760px){ .gal{ grid-template-columns:1fr 1fr; } }
-  .gal figure{ background:#0b1220; border:1px solid var(--edge); border-radius:14px; overflow:hidden; transition:.15s; }
-  .gal figure:hover{ border-color:var(--teal); transform:translateY(-2px); }
-  .gal img{ display:block; width:100%; height:200px; object-fit:cover; object-position:center; }
-  .gal figcaption{ padding:9px 13px; font-size:12.5px; color:var(--dim); }
-  .proj .pic.dev{ background:radial-gradient(120% 120% at 50% 0%,#12203a,#0b1220); }
-  .proj .pic.dev img{ object-fit:contain; padding:12px 0; }
-  .boards{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:2px 0 18px; }
-  @media(max-width:640px){ .boards{ grid-template-columns:1fr; } }
-  .boards figure{ background:var(--bg2); border:1px solid var(--edge); border-radius:14px; overflow:hidden; transition:.15s; }
-  .boards figure:hover{ border-color:var(--teal); transform:translateY(-2px); }
-  .boards img{ display:block; width:100%; height:260px; object-fit:cover; object-position:center; background:#0b1220; }
-  .boards img.stock{ object-fit:contain; background:#f4f5f7; padding:8px; }
-  .boards img.dev{ object-fit:contain; background:radial-gradient(120% 120% at 50% 0%,#12203a,#0b1220); padding:10px; }
-  .boards figcaption{ padding:12px 14px; font-size:13.5px; color:var(--dim); } .boards figcaption b{ color:var(--ink); }
+  *{box-sizing:border-box;margin:0}
+  html{scroll-behavior:smooth}
+  body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:var(--teal);text-decoration:none}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+
+  nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);background:rgba(13,17,23,.72);border-bottom:1px solid var(--edge)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:58px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:.4px;color:var(--ink);font-size:17px}
+  .brand svg{width:26px;height:26px}
+  nav .links{margin-left:auto;display:flex;gap:18px;font-size:14.5px}
+  nav .links a{color:var(--dim);font-weight:600}
+  nav .links a:hover{color:var(--ink)}
+  nav .links a.gh{color:var(--teal)}
+  @media(max-width:640px){nav .links a:not(.gh){display:none}}
+
+  header{padding:84px 0 30px;background:
+    radial-gradient(700px 340px at 18% 0%,rgba(52,226,192,.10),transparent 60%),
+    radial-gradient(700px 340px at 85% 10%,rgba(124,140,255,.10),transparent 60%)}
+  .kicker{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+  h1{font-size:clamp(34px,5.4vw,56px);line-height:1.08;font-weight:800;margin:14px 0 18px;max-width:820px}
+  h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:19px;color:var(--dim);max-width:680px}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0 8px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:10px;font-weight:700;font-size:15px;border:1px solid var(--edge);color:var(--ink);background:var(--panel);transition:transform .12s ease,border-color .12s ease}
+  .btn:hover{transform:translateY(-1px);border-color:var(--teal)}
+  .btn.primary{background:var(--grad);color:#08131a;border:none}
+  .btn svg{width:16px;height:16px}
+  .sub-note{color:var(--dim);font-size:13.5px;margin-top:10px}
+
+  section{padding:58px 0}
+  .sec-k{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+  h2{font-size:clamp(24px,3.4vw,34px);font-weight:800;line-height:1.15;margin-bottom:10px}
+  .sec-lede{color:var(--dim);max-width:640px;margin-bottom:34px}
+
+  .prod{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:820px){.prod{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--edge);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s ease,transform .15s ease}
+  .card:hover{border-color:#31507a;transform:translateY(-2px)}
+  .card .shot{aspect-ratio:16/8.5;background:var(--bg2);overflow:hidden;border-bottom:1px solid var(--edge);position:relative;display:block}
+  .card .shot img{width:100%;height:100%;object-fit:cover;display:block}
+  .card .body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:10px;flex:1}
+  .pt{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .pt h3{font-size:21px;font-weight:800}
+  .pt .tag{font-size:11px;font-weight:700;letter-spacing:.08em;padding:3px 9px;border-radius:99px;border:1px solid var(--edge);color:var(--dim);text-transform:uppercase}
+  .pt .tag.new{border-color:var(--teal);color:var(--teal)}
+  .card p{color:var(--dim);font-size:15px;flex:1}
+  .card .row{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;font-weight:700;margin-top:6px}
+  .card .row a{display:inline-flex;align-items:center;gap:6px}
+  .card .row a svg{width:14px;height:14px}
+  .card .row .dim-a{color:var(--dim)}
+  .card .row .dim-a:hover{color:var(--ink)}
+  .livechip{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;gap:7px;background:rgba(10,14,21,.82);border:1px solid var(--edge);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--ink)}
+  .livechip .dot{width:7px;height:7px;border-radius:99px;background:var(--teal);box-shadow:0 0 8px var(--teal)}
+
+  .term{position:absolute;inset:0;padding:18px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.8px;line-height:1.75;color:#c7d4e8;background:#0e1116}
+  .term .t{color:var(--teal)} .term .a{color:var(--amber)} .term .d{color:#66738c}
+
+  .why{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+  @media(max-width:820px){.why{grid-template-columns:1fr}}
+  .why .w{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:20px}
+  .why h4{font-size:16.5px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+  .why h4 svg{width:17px;height:17px;color:var(--teal);flex:none}
+  .why p{color:var(--dim);font-size:14.5px}
+
+  .parts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
+  @media(max-width:820px){.parts{grid-template-columns:1fr}}
+  .part{display:flex;gap:16px;background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:18px;align-items:center}
+  .part img{width:96px;height:96px;object-fit:cover;border-radius:10px;border:1px solid var(--edge);flex:none}
+  .part h4{font-size:16px;font-weight:800}
+  .part p{color:var(--dim);font-size:13.8px;margin:3px 0 7px}
+  .part a{font-weight:700;font-size:13.8px}
+
+  footer{border-top:1px solid var(--edge);padding:34px 0 44px;color:var(--dim);font-size:14px}
+  footer .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  footer .links{margin-left:auto;display:flex;gap:16px;flex-wrap:wrap}
+  footer a{color:var(--dim);font-weight:600}
+  footer a:hover{color:var(--ink)}
 </style>
 </head>
 <body>
 
-<nav><div class="wrap"><div class="row">
-  <div class="brand">
-    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#151d2c"/><path d="M10 21a6.5 6.5 0 0 1 12-3.3l3.2-1.1-2.1 3.1 1.1 3.2-3.2-1.1A6.5 6.5 0 0 1 10 21z" fill="#ffbe4d"/><circle cx="20.4" cy="15.6" r="1.5" fill="#0d1117"/></svg>
-    <span class="wm">Roost<span class="os">OS</span></span>
+<nav><div class="wrap">
+  <a class="brand" href="/">
+    <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#0a0e15"/><path d="M11 20a6 6 0 0 1 11-3l3-1-2 3 1 3-3-1a6 6 0 0 1-10-1z" fill="#ffbe4d"/><circle cx="20" cy="15" r="1.4" fill="#0a0e15"/></svg>
+    RoostOS
+  </a>
+  <div class="links">
+    <a href="#perch">Perch</a>
+    <a href="#coop">Coop</a>
+    <a href="/tdeck">Communicator</a>
+    <a href="/roost">Roost Server</a>
+    <a class="gh" href="https://github.com/StevenSSparks">GitHub</a>
   </div>
-  <div class="spacer"></div>
-  <a class="link" href="#projects">Projects</a>
-  <a class="link" href="#unique">What's unique</a>
-  <a class="link" href="#build">Build it yourself</a>
-  <a class="link" href="/tdeck">T-Deck</a>
-  <a class="link" href="/roost">Roost Server</a>
-  <a class="btn" href="https://github.com/StevenSSparks/roost-tdeck">GitHub ↗</a>
-</div></div></nav>
+</div></nav>
 
-<header class="wrap"><div class="hero">
-  <div class="hero-copy">
-    <span class="kicker">🐤 open source · esp32 · MIT · no soldering</span>
-    <h1>Build a real device<br>this <span class="g">weekend.</span></h1>
-    <p class="lead">RoostOS turns cheap, off-the-shelf ESP32 boards into <b>real, useful devices</b> —
-    like this pocket AI communicator that chats with Claude, GPT, Gemini or your own local model
-    over WiFi. <b>No soldering. All code. All fun</b> — even if you've never built hardware before.</p>
-    <div class="cta">
-      <a class="btn pri" href="#projects">See the builds ↓</a>
-      <a class="btn" href="#build">How to build one</a>
-    </div>
-    <div class="chips">
-      <span class="chip">💵 Roost &lt;$20 · Communicator &lt;$100</span>
-      <span class="chip">🛒 Micro Center / GigaParts</span>
-      <span class="chip">🧰 no soldering, no 3D printer</span>
-      <span class="chip">🐣 beginner &amp; expert friendly</span>
-    </div>
+<header><div class="wrap">
+  <div class="kicker">Open source · no cloud, no subscriptions</div>
+  <h1>Appliance-grade software for <span class="g">hardware you own</span>.</h1>
+  <p class="lede">RoostOS turns small radios and dev boards into finished products: a command
+  center for your Meshtastic mesh, a pocket AI communicator, a self-hosted server.
+  Flash it, plug it in, use it — everything runs on your desk, not someone else's cloud.</p>
+  <div class="cta-row">
+    <a class="btn primary" href="https://demo.perchmesh.dev">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Try the live Perch demo</a>
+    <a class="btn" href="https://github.com/StevenSSparks/perch">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.6-3.9-1.6-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C17 4.9 18 5.2 18 5.2c.6 1.6.2 2.8.1 3.1.7.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .4.2.7.8.6a11.5 11.5 0 0 0 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+      Get the code</a>
   </div>
-  <div class="hero-shot">
-    <img src="/tdeck/img/IMG_3088.jpg" alt="The RoostOS Communicator booting on a LILYGO T-Deck Plus — full QWERTY keyboard and trackball">
-    <img src="/img/xiao-real.jpg" alt="A Roost Server running on a Seeed XIAO ESP32-S3 with its antenna, powered over USB-C">
-  </div>
-  <span class="hero-cap">Real hardware: the <b>Communicator</b> (LILYGO T-Deck Plus) and a <b>Roost Server</b> (Seeed XIAO ESP32-S3) — two builds, both RoostOS.</span>
+  <p class="sub-note mono">macOS app today · single Go binary on Linux &amp; Windows · full Perch &amp; Coop story at perchmesh.dev</p>
 </div></header>
 
-<section class="wrap" id="gallery" style="padding-top:14px">
-  <div class="eyebrow">Real photos · not renders</div>
-  <h2>Here's what it actually does</h2>
-  <p class="sub">Actual snapshots of the RoostOS Communicator running — chat, maps, games, and a full settings/terminal, all on a $80-ish handheld.</p>
-  <div class="gal">
-    <figure><img src="/tdeck/img/boot-splash.jpg" alt="RoostOS Communicator boot splash with the bird logo"><figcaption>🐤 Boots into RoostOS in seconds</figcaption></figure>
-    <figure><img src="/tdeck/img/chat-catstory.jpg" alt="Chatting with an AI assistant on the T-Deck screen"><figcaption>💬 Chat with Claude / GPT / Gemini / Ollama over WiFi</figcaption></figure>
-    <figure><img src="/tdeck/img/abilities.jpg" alt="The RoostOS AI listing what it can do: show maps, give walking/driving/biking directions, find location, chat"><figcaption>🧠 Ask it what it can do</figcaption></figure>
-    <figure><img src="/tdeck/img/route.jpg" alt="A driving route from Waco to Tulsa drawn on the T-Deck map with distance and time"><figcaption>🗺️ Directions drawn on the map (metro → cross-country)</figcaption></figure>
-    <figure><img src="/tdeck/img/directions-text.jpg" alt="Numbered turn-by-turn driving directions in text on the T-Deck screen"><figcaption>🧭 …and read back as turn-by-turn text steps</figcaption></figure>
-    <figure><img src="/tdeck/img/ai-providers.jpg" alt="On-device AI provider picker showing anthropic, openai, gemini, ollama and the model"><figcaption>🔀 Pick your AI provider &amp; model right on the device</figcaption></figure>
-    <figure><img src="/tdeck/img/IMG_3104.jpg" alt="RoostOS settings screen showing WiFi, remote shell, IP and uptime"><figcaption>⚙️ Settings, WiFi &amp; a remote shell (SSH / telnet)</figcaption></figure>
-    <figure><img src="/tdeck/img/IMG_3097.jpg" alt="Snake game running on the T-Deck"><figcaption>🐍 Built-in games — Snake, Sudoku, slide puzzle</figcaption></figure>
-  </div>
-</section>
+<section id="products"><div class="wrap">
+  <div class="sec-k">The flock</div>
+  <h2>Four projects, one idea: devices that just work.</h2>
+  <p class="sec-lede">Every RoostOS project ships as a finished thing — flash it or double-click it
+  and you're running. No dashboards to assemble, no YAML, no accounts.</p>
 
-<main>
-<section class="wrap" id="story">
-  <div class="eyebrow">The idea</div>
-  <h2>A device that's actually <em>yours</em></h2>
-  <div class="story">
-    <p>Most gadgets are sealed boxes running someone else's software. RoostOS is the opposite:
-    you take a $20–$60 board that already has a screen, a keyboard, WiFi, and a battery, and you
-    turn it into something <b>you</b> built and <b>you</b> understand — in code you can read.</p>
-    <p>It began as a question: <i>how much real "computer" can you pack into a microcontroller?</i>
-    That grew into two projects. One is a <b>handheld AI communicator</b> — a pocket QWERTY device
-    that chats with Claude, GPT, Gemini, or your own local model over WiFi. The other is a
-    <b>"data center" in a microcontroller</b> — a single chip serving its own WiFi, DNS, real
-    HTTPS website, and an SSH shell.</p>
-    <p>Both are open source (MIT), both flash from your laptop with one command, and <b>neither
-    needs a soldering iron</b>. Where a lot of maker projects need a 3D printer, custom PCBs, or
-    special gear, this is <b>100% off-the-shelf</b>: the simple Roost Server runs on a board for
-    <b>under $20</b>, and the whole Communicator handheld is <b>under $100</b>. Whether you're a total
-    beginner who just wants a cool gadget or an expert who wants to hack on the firmware, this is for
-    you. Here's the whole story — and a step-by-step invitation to build your own.</p>
-  </div>
-</section>
-
-<section class="wrap" id="projects">
-  <div class="eyebrow">Two builds</div>
-  <h2>Pick a project</h2>
-  <p class="sub">Each has its own full page with photos, docs, and a build guide.</p>
-  <div class="projects">
-    <div class="proj">
-      <a class="pic" href="/tdeck"><img src="/tdeck/img/boot-splash.jpg" alt="RoostOS Communicator booting — the RoostOS logo on the T-Deck screen"></a>
+  <div class="prod">
+    <div class="card" id="perch">
+      <a class="shot" href="https://perchmesh.dev"><img src="img/perch-dashboard.png" alt="Perch dashboard — live map, node detail with traceroute">
+        <span class="livechip"><span class="dot"></span>LIVE DEMO</span></a>
       <div class="body">
-        <div class="tag">Handheld · LILYGO T-Deck Plus</div>
-        <h3>RoostOS <span>Communicator</span></h3>
-        <p>A pocket <b>AI communicator</b>. Type on the QWERTY, chat with Claude / GPT / Gemini /
-        local Ollama over WiFi. On-screen maps, GPS, games, a configurable status bar, web search,
-        and a full terminal — chat &amp; configure it over USB-C, a network shell, or real <b>SSH</b>.</p>
+        <div class="pt"><h3>Perch</h3><span class="tag new">New</span><span class="tag">macOS · Linux · Windows</span></div>
+        <p>A command center for your Meshtastic mesh. Chat with tapbacks, a live map with
+        shared waypoints, deep node intel, traceroute with per-hop signal strength, position
+        requests, and a capture database you keep. Plug in a $40 radio and see your whole city's mesh.</p>
         <div class="row">
-          <a class="btn pri" href="/tdeck">Open the T-Deck page →</a>
-          <a class="btn" href="https://github.com/StevenSSparks/roost-tdeck">GitHub ↗</a>
+          <a href="https://perch.perchmesh.dev">Open the live demo
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+          <a class="dim-a" href="https://perchmesh.dev">perchmesh.dev — full site &amp; docs</a>
+          <a class="dim-a" href="https://github.com/StevenSSparks/perch">GitHub</a>
         </div>
       </div>
     </div>
-    <div class="proj">
-      <a class="pic" href="/roost"><img src="/img/roost-real.jpg" alt="Roost Server running on a Seeed XIAO ESP32-S3 with antenna, powered over USB-C"></a>
+
+    <div class="card" id="coop">
+      <a class="shot" href="https://coop.perchmesh.dev"><span class="term">
+          <span style="display:block"><span class="d">18:42:11</span> coop: web on port 2667 <span class="t">(COOP)</span></span>
+          <span style="display:block"><span class="d">18:42:11</span> coop: capture db <span class="a">~/Documents/Coop/mesh.db</span> (30d)</span>
+          <span style="display:block"><span class="d">18:42:12</span> coop: connecting over serial /dev/cu.usbmodem…</span>
+          <span style="display:block"><span class="d">18:42:14</span> coop: <span class="t">connected — serving API; streaming live packets</span></span>
+          <span style="display:block"><span class="d">18:42:15</span> POSITION_APP · Lighthouse <span class="a">-7.0dB</span></span>
+          <span style="display:block"><span class="d">18:42:17</span> TRACEROUTE_APP · reply in 30.5s · 3 relays</span>
+        </span>
+        <span class="livechip"><span class="dot"></span>SIMULATION</span></a>
       <div class="body">
-        <div class="tag">Web appliance · any ESP32</div>
-        <h3>Roost <span>Server</span></h3>
-        <p>A <b>"data center" in a microcontroller</b>. One cheap chip becomes a captive-portal
-        appliance: its own WiFi, DNS, a real <b>HTTPS</b> padlock, a live console, and an
-        <b>SSH mini-shell</b>. Point it at any static site. Build and test on your laptop
-        (there's even an emulator), then flash in one command.</p>
+        <div class="pt"><h3>Coop</h3><span class="tag">The engine</span></div>
+        <p>The daemon behind Perch. Owns the radio over USB, WiFi, or BLE; decodes and decrypts
+        mesh traffic; answers a clean REST + SSE API; and captures everything to a SQLite file
+        in your Documents folder — history that survives restarts and belongs to you.</p>
         <div class="row">
-          <a class="btn pri" href="/roost">Open Roost Server →</a>
-          <a class="btn" href="https://github.com/StevenSSparks/roost">GitHub ↗</a>
+          <a href="https://coop.perchmesh.dev">See the engine running
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+          <a class="dim-a" href="https://perchmesh.dev/docs/">Docs</a>
+          <a class="dim-a" href="https://github.com/StevenSSparks/perch">GitHub</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="tdeck">
+      <a class="shot" href="/tdeck"><img src="tdeck/img/chat-catstory.jpg" alt="RoostOS Communicator running on a LILYGO T-Deck"></a>
+      <div class="body">
+        <div class="pt"><h3>RoostOS Communicator</h3><span class="tag">T-Deck</span></div>
+        <p>A pocket device with a keyboard that talks to Claude or Gemini over WiFi — chat,
+        directions, abilities, and a real boot splash, all on a $60 LILYGO T-Deck. Flash it
+        in the browser, add an API key, and it's yours.</p>
+        <div class="row">
+          <a href="/tdeck">Project page</a>
+          <a class="dim-a" href="/tdeck/config">Web flasher &amp; config</a>
+          <a class="dim-a" href="https://github.com/StevenSSparks/roost-tdeck">GitHub</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="roost">
+      <a class="shot" href="/roost"><img src="img/roost-real.jpg" alt="Roost Server hardware"></a>
+      <div class="body">
+        <div class="pt"><h3>Roost Server</h3><span class="tag">Self-hosted</span></div>
+        <p>An appliance-in-a-box home server: web console, AI integrations, and the plumbing
+        already done. The original Roost — where the nest started.</p>
+        <div class="row">
+          <a href="/roost">Project page</a>
+          <a class="dim-a" href="https://github.com/StevenSSparks/roost">GitHub</a>
         </div>
       </div>
     </div>
   </div>
-</section>
+</div></section>
 
-<section class="wrap" id="unique">
-  <div class="eyebrow">What makes it unique</div>
-  <h2>Not your average ESP32 sketch</h2>
-  <p class="sub">The Communicator packs a surprising amount of "real device" into a pocket board:</p>
-  <div class="feat">
-    <div class="card"><div class="ic">🤖</div><h4>Bring your own AI</h4><p>Chat with <b>Claude, GPT, Gemini,</b> or a <b>local Ollama</b> model. Pick the active one in
-      Settings — it verifies the key answers before switching, so you're never stuck on a dead provider.</p></div>
-    <div class="card"><div class="ic">🗺️</div><h4>Maps &amp; real directions</h4><p>Ask <i>"a good steakhouse in Clayton?"</i> or <i>"driving directions to the Gateway Arch"</i> and it
-      <b>searches the web</b>, <b>draws the map</b>, and gives <b>turn-by-turn directions</b> — distance, time, and numbered steps — from your block to across the country.</p></div>
-    <div class="card"><div class="ic">💬</div><h4>A real conversation</h4><p>It <b>remembers the context</b> across turns — ask a follow-up, say "no", use "it" or "there" — the
-      device replays the chat so the AI actually keeps the thread. The <b>new</b> button starts fresh.</p></div>
-    <div class="card"><div class="ic">🔐</div><h4>SSH into a handheld</h4><p>Turn on the SSH server and <code>ssh roost@&lt;device&gt;</code> from any laptop — you drop straight
-      into the <b>same chat</b>, and can configure everything. A pocket device you can log into. </p></div>
-    <div class="card"><div class="ic">📶</div><h4>2.4 GHz WiFi</h4><p>ESP32 boards are <b>2.4 GHz only</b> — join a 2.4 GHz network (most routers broadcast both). The
-      T-Deck's WiFi antenna clips onto a tiny U.FL connector; seat it for a strong signal.</p></div>
-    <div class="card"><div class="ic">⚙️</div><h4>Configure any way</h4><p>On the touchscreen, over USB-C, over the network, or via a browser <a href="/tdeck/config">config
-      builder</a>. Flash with just WiFi, then paste your API key over the shell — no rebuild.</p></div>
-  </div>
-</section>
-
-<section class="wrap" id="build">
-  <div class="eyebrow">You can build this too</div>
-  <h2>From box to working device</h2>
-  <p class="sub">No soldering, no prior hardware experience. If you can copy/paste a terminal command
-  and plug in a USB-C cable, you're about 20 minutes from a device booting your own code.</p>
-  <div class="steps">
-    <div class="step"><div class="n">STEP 1</div><h4>Order a board</h4><p>Get a <b>LILYGO T-Deck Plus</b> (Communicator) or any <b>ESP32</b> board (Roost) — online or in
-      person at <b>Micro Center</b> or <b>GigaParts</b>. Screen, WiFi and battery are built in; nothing to wire.</p></div>
-    <div class="step"><div class="n">STEP 2</div><h4>Get an AI key</h4><p>For the Communicator, grab an API key — <b>Anthropic</b> (Claude), <b>OpenAI</b>, or <b>Gemini</b>
-      (free tier). Or run a <b>local Ollama</b> model with no key at all.</p></div>
-    <div class="step"><div class="n">STEP 3</div><h4>Set your values</h4><p>Use the browser <a href="/tdeck/config">config builder</a> (or copy <code>secrets.example.h</code>) to enter your
-      2.4 GHz WiFi + key. It runs entirely in your browser — nothing is uploaded.</p></div>
-    <div class="step"><div class="n">STEP 4</div><h4>Flash &amp; go</h4><p>Install PlatformIO (<code>brew install platformio</code>), plug in USB-C, run
-      <code>pio run -e app -t upload</code>, and watch <i>your</i> software boot. Start chatting.</p></div>
-  </div>
-
-  <div class="band" style="margin-top:22px">
-    <h2 style="text-align:left;margin-top:0">Where to get the parts</h2>
-    <p class="sub" style="text-align:left;margin:6px 0 10px">Everything is off-the-shelf and USB-C — order online or walk into a store. No soldering iron, no breadboard.</p>
-    <div class="boards">
-      <figure>
-        <a href="https://www.microcenter.com/product/703092/lilygo-t-deck-plus-esp32-s3-915mhz-lora-89-sx1262-ulbox-gps-28-inch-display-ttgo-development-board-black-keyboard" target="_blank" rel="noopener"><img class="dev" src="/tdeck/img/IMG_3088.jpg" alt="LILYGO T-Deck Plus handheld running RoostOS"></a>
-        <figcaption><b>Communicator — LILYGO T-Deck Plus</b><br><span style="color:var(--amber);font-weight:700">$89.99 · Micro Center</span> (SKU 942391) · also GigaParts. QWERTY, 2.8″ screen, WiFi, GPS &amp; battery — nothing to wire.</figcaption>
-      </figure>
-      <figure>
-        <a href="https://www.gigaparts.com/seeed-studio-xiao-esp32s3-wio-sx1262-kit-with-3d-case-for-meshtastic-lora.html" target="_blank" rel="noopener"><img class="stock" src="/img/xiao-esp32s3.jpg" alt="Seeed XIAO ESP32-S3 kit — module, screw-on 2.4 GHz antenna and USB-C cable"></a>
-        <figcaption><b>Roost Server — Seeed XIAO ESP32-S3 kit</b><br><span style="color:var(--amber);font-weight:700">$18.95 · GigaParts</span> (SKU ZSE-0005). Module + screw-on 2.4&nbsp;GHz antenna + USB-C. Any ESP32-S3 works.</figcaption>
-      </figure>
+<section id="why" style="background:var(--bg2)"><div class="wrap">
+  <div class="sec-k">Why RoostOS</div>
+  <h2>Not your average ESP32 sketch.</h2>
+  <div class="why">
+    <div class="w">
+      <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></svg>Yours, actually</h4>
+      <p>Your radio, your capture database, your API keys. Everything runs locally;
+      nothing phones home. Open source end to end.</p>
     </div>
-    <div class="kit">
-      <a href="https://www.microcenter.com/product/703092/lilygo-t-deck-plus-esp32-s3-915mhz-lora-89-sx1262-ulbox-gps-28-inch-display-ttgo-development-board-black-keyboard" target="_blank" rel="noopener">🐤 Communicator board — LILYGO T-Deck Plus <small><b>$89.99 at Micro Center</b> (SKU 942391) — QWERTY, 2.8″ screen, WiFi, GPS &amp; battery built in. Also at GigaParts. Nothing to wire.</small></a>
-      <a href="https://www.gigaparts.com/seeed-studio-xiao-esp32s3-wio-sx1262-kit-with-3d-case-for-meshtastic-lora.html" target="_blank" rel="noopener">💵 Roost Server board — Seeed XIAO ESP32-S3 kit <small><b>$18.95 at GigaParts</b> (SKU ZSE-0005). Any ESP32-S3 works — this is the easy under-$20 pick.</small></a>
-      <a href="https://www.microcenter.com" target="_blank" rel="noopener">Micro Center <small>ESP32 dev boards, USB-C cables, maker gear — in-store &amp; online.</small></a>
-      <a href="https://www.gigaparts.com" target="_blank" rel="noopener">GigaParts <small>LILYGO T-Deck, ESP32 boards, antennas &amp; accessories — online or call 1-256-384-1008.</small></a>
-      <a href="https://console.anthropic.com" target="_blank" rel="noopener">Anthropic (Claude) key <small>console.anthropic.com → API Keys (recommended default).</small></a>
-      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Gemini key (free tier) <small>aistudio.google.com/app/apikey — or use OpenAI / local Ollama.</small></a>
+    <div class="w">
+      <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>Finished, not a kit</h4>
+      <p>Signed macOS app, browser flasher, single binaries. The soldering, packaging,
+      and "why won't it boot" are already done.</p>
     </div>
-    <p class="note" style="margin-top:14px">📶 <b>Heads-up on WiFi:</b> ESP32 is <b>2.4 GHz only</b>. Pick a 2.4 GHz SSID (most home routers
-    broadcast 2.4 &amp; 5 GHz — use the 2.4). On the T-Deck Plus, make sure the WiFi antenna is snapped onto its U.FL connector, or the signal will be weak.</p>
+    <div class="w">
+      <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18"/></svg>Off-grid friendly</h4>
+      <p>Perch and Coop speak Meshtastic — LoRa mesh that works when cell service
+      doesn't. Tested daily on the MeshSTL community mesh in St. Louis.</p>
+    </div>
   </div>
-</section>
+</div></section>
 
-<section class="wrap" id="learn">
-  <div class="eyebrow">Read &amp; learn</div>
-  <h2>Walk-throughs &amp; docs</h2>
-  <p class="sub">Everything is written to be followed by a beginner — and there's depth for experts.</p>
-  <div class="kit" style="grid-template-columns:1fr 1fr 1fr">
-    <a href="/tdeck">T-Deck: full guide <small>features, get-set-up, the terminal command reference</small></a>
-    <a href="/tdeck/config">Config builder <small>generate your settings in the browser</small></a>
-    <a href="https://github.com/StevenSSparks/roost-tdeck#readme">Communicator README <small>clone → configure → flash → fun</small></a>
-    <a href="/roost">Roost Server: full guide <small>the appliance in a box</small></a>
-    <a href="https://github.com/StevenSSparks/roost/blob/main/docs/MAKE-YOUR-OWN.md">Roost Server: make your own <small>step-by-step build doc</small></a>
-    <a href="https://github.com/StevenSSparks/roost#readme">Roost Server README <small>brew install → run → flash</small></a>
-    <a href="https://github.com/StevenSSparks/roost-tdeck/issues">Communicator questions &amp; issues <small>ask on GitHub — beginners welcome</small></a>
-    <a href="https://github.com/StevenSSparks/roost/issues">Roost Server questions &amp; issues <small>ask on GitHub — beginners welcome</small></a>
+<section id="parts"><div class="wrap">
+  <div class="sec-k">Where to get the parts</div>
+  <h2>Two boards cover the whole flock.</h2>
+  <div class="parts">
+    <div class="part">
+      <img src="img/xiao-real.jpg" alt="Seeed XIAO ESP32-S3 Meshtastic kit">
+      <div>
+        <h4>Seeed XIAO ESP32-S3 + Wio-SX1262 kit</h4>
+        <p>The $40 radio Perch was built around — LoRa, WiFi, 3D-printed case included.</p>
+        <a href="https://www.gigaparts.com/seeed-studio-xiao-esp32s3-wio-sx1262-kit-with-3d-case-for-meshtastic-lora.html">GigaParts →</a>
+      </div>
+    </div>
+    <div class="part">
+      <img src="tdeck/img/boot-splash.jpg" alt="LILYGO T-Deck Plus">
+      <div>
+        <h4>LILYGO T-Deck Plus</h4>
+        <p>Keyboard, touchscreen, LoRa, and GPS — runs the Communicator (or Meshtastic).</p>
+        <a href="https://www.microcenter.com/product/703092/lilygo-t-deck-plus-esp32-s3-915mhz-lora-89-sx1262-ulbox-gps-28-inch-display-ttgo-development-board-black-keyboard">Micro Center →</a>
+      </div>
+    </div>
   </div>
-</section>
-</main>
+</div></section>
 
-<footer><div class="wrap"><div class="row">
-  <div class="brand" style="font-size:16px"><span>🐤</span> <span class="wm">Roost<span class="os">OS</span></span></div>
-  <div class="spacer" style="flex:1"></div>
-  <a href="/tdeck">Communicator</a>
-  <a href="/roost">Roost Server</a>
-  <a href="https://github.com/StevenSSparks/roost-tdeck">Communicator repo</a>
-  <a href="https://github.com/StevenSSparks/roost">Roost Server repo</a>
-  <span>MIT licensed · made for tinkerers</span>
-</div></div></footer>
+<footer><div class="wrap">
+  <span>RoostOS · built in St. Louis · hatched with care</span>
+  <div class="links">
+    <a href="https://github.com/StevenSSparks">GitHub</a>
+    <a href="https://perchmesh.dev">perchmesh.dev</a>
+    <a href="https://meshstl.org">MeshSTL</a>
+  </div>
+</div></footer>
 
-</body>
-</html>
+</body></html>
